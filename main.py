@@ -1,63 +1,26 @@
-import telebot
-import webbrowser
-
 import schedule
-import requests
+import time
+import datetime
 
-from telebot import types
+# Словарь с датами и именами
+dates_and_names = {
+    '2023-11-02': 'John',
+    '2023-12-25': 'Alice',
+    '2023-10-03': 'Bob'
+}
 
-#if you need menu you must see second video dudar tgbot
+def send_birthday_greetings():
+    current_date = datetime.date.today()
+    current_date_str = current_date.strftime('%Y-%m-%d')
 
-bot = telebot.TeleBot('6568976463:AAG7UZSuZYkiJtsFBOCKKORuu3BztgElW1k')
+    if current_date_str in dates_and_names:
+        name = dates_and_names[current_date_str]
+        print(f"Сегодня именинник: {name}")
+        # Здесь можно добавить код для отправки поздравления (например, через Telegram бота)
 
-@bot.message_handler(commands=['site','website'])
-def site(message):
-    webbrowser.open('https://ya.ru/')
+# Создаем задачу, которая будет выполняться каждый день в полночь
+schedule.every().day.at("11:33").do(send_birthday_greetings)
 
-@bot.message_handler(commands=['start'])
-def main(message):
-    bot.send_message(message.chat.id, f'Hello, {message.from_user.first_name} ')
-
-#тут кнопки внизу строки
-def start(message):
-    markup = types.ReplyKeyboardMarkup()
-    
-    btn1 = types.KeyboardButton('btn1')
-    markup.row(btn1)
-    bot.send_message(message.chat.id,'hello',reply_markup=markup)
-
-
-@bot.message_handler(commands=['help'])
-def help(message): #<b></b> - жирным <em> - наклон
-    bot.send_message(message.chat.id, '<b>print</b> /start <em>for</em> ...' , parse_mode='html')
-
-
-@bot.message_handler()
-def msg_from_user(message):
-    if(message.text.lower() == 'привет'):
-        bot.send_message(message.chat.id, 'и тебе привет')
-    elif message.text.lower() == 'id':
-        bot.reply_to(message,f'ID = {message.from_user.id}')
-
-@bot.message_handler(content_types=['photo']) #any tipes
-def get_photo(message):
-
-    #add button inline тут кнопки к сообщению бота
-    markup = types.InlineKeyboardMarkup()
-    btn1 = types.InlineKeyboardButton('Перейти на сайт',url='https://ya.ru/')
-    btn2 = types.InlineKeyboardButton('delete', callback_data='delete')
-    markup.row(btn1,btn2) # расположение кнопок
-    #markup.row(btn2)
-
-    bot.reply_to(message, 'какое красивое фото!', reply_markup=markup)
-
-
-
-#почитать про лямба функции, callback: True - разобраться
-@bot.callback_query_handler(func=lambda callback: True)
-def callback_message(callback):
-    if callback.data == 'delete':
-        bot.delete_message(callback.message.chat.id, callback.message.message_id - 1)
-
-
-bot.polling(non_stop=True)                     
+while True:
+    schedule.run_pending()
+    time.sleep(1)
